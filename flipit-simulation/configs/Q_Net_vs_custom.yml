@@ -1,0 +1,33 @@
+---
+  debug: True
+  outfile: "out.csv"
+  p1_strategy: q-net
+  p1_cost: 2
+  p1_config:
+    gamma: 0.8
+    p: 0.5
+    obs_size: 4
+    learning_rate: 0.00025
+    optim_epsilon: 0.01
+    optim_alpha: 0.95 
+    explore_config:
+      epsilon: 0.99
+      decay_lambda: 0.0003
+    estimate_type: td
+    step_type: sample-average
+    batch_size: 32
+    buffer_size: 200
+    target_update: 200
+  p0_strategy: custom
+  p0_config:
+    dist: [0.03,0.04,0.03,0.08,0.12,0.15,0.15,0.08,0.07,0.06,0.06,0.04,0.04,0.03,0.02]
+    # dist: [0.0,0.0,0.0,0.0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1]
+    # avg_mv: 15
+    delta: 15
+  p0_cost: 2
+  duration: 80000
+  rew_type: New_benefit
+  # rew_type: constant_minus_cost_norm
+  rew_config:
+    c: 5
+  obs_type: opp_LM

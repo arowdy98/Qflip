@@ -1,0 +1,27 @@
+---
+  debug: True
+  outfile: "out.csv"
+  p1_strategy: q-batch
+  p1_cost: 10
+  p1_config:
+    gamma: 0.8
+    p: 0.7
+    exploration_type: epsilon-greedy-visit-decay
+    explore_config:
+      epsilon: 0.9
+      decay_lambda: 0.05
+    estimate_type: td
+    step_type: sample-average
+    batch_size: 32
+  p0_strategy: periodic
+  p0_config:
+    avg_mv: 15
+    delta: 15
+  p0_cost: 1
+  duration: 6000
+  # rew_type: New_benefit
+  rew_type: constant_minus_cost_norm
+  rew_config:
+    c: 5
+  obs_type: opp_LM
+

@@ -3,7 +3,7 @@ import gym_flipit
 import numpy as np
 import pprint
 import random
-from strategies import GreedyWrapper,Q,Renewal,PeriodicOptimal,Q_Batch, Q_Net
+from strategies import GreedyWrapper,Q,Renewal,PeriodicOptimal,Q_Batch, Q_Net, Policy_Net
 import matplotlib.pyplot as mlt
 
 class Simulation:
@@ -25,6 +25,8 @@ class Simulation:
         env = gym.make('Flipit-v0')
         if rew_type == 'constant_minus_cost_norm':
             rew_config['val'] = p0_config['avg_mv']
+        if obs_type == "composite":
+            p1_config["obs_size"] *= 2
         env.config(obs_type,rew_type,rew_config,p0_strategy,p0_config,duration,p0_cost,p1_cost)
         observation = env.reset()
         a = self.gen_attacker(p1_strategy,env,p1_config,p1_cost,debug)
@@ -43,34 +45,58 @@ class Simulation:
         # acts = []
         # prev_tick = 0
         # run simulation
-        encoded_obs = []
-        prev_encoded_obs = []
+
+        encoded_obs = [-1]*p1_config["obs_size"]
+        prev_encoded_obs = [-1]*p1_config["obs_size"]
+        # encoded_obs = []
+        # prev_encoded_obs = []
         benefit_per_100 = []
         prev_benefit = 0
-        for tick in range(duration):
-    
-            prev_observation = observation
-    
-            if len(encoded_obs) < p1_config['obs_size']:
-                action = 0 if random.random() < p1_config['p'] else 1
-                observation, reward, done, info = env.step(action)
-                encoded_obs.append(observation)
-                prev_encoded_obs.append(prev_observation)
-                continue
-            
-            del prev_encoded_obs[0]
-            prev_encoded_obs.append(prev_observation)
 
-            action = a.pre(tick,prev_encoded_obs)
+        for tick in range(duration):
+            prev_encoded_obs = encoded_obs.copy()
+            # prev_observation = observation
+            # if len(encoded_obs) < p1_config['obs_size']:
+            #     action = 0 if random.random() < p1_config['p'] else 1
+            #     observation, reward, done, info = env.step(action)
+            #     print("Trouble")
+            #     if obs_type == "composite":
+            #         encoded_obs.append(observation[0])
+            #         encoded_obs.append(observation[1])
+            #         prev_encoded_obs.append(prev_observation[0])
+            #         prev_encoded_obs.append(prev_observation[1])
+            #     else:
+            #         encoded_obs.append(observation)
+            #         prev_encoded_obs.append(prev_observation)
+            #     continue
+            
+            # if (prev_observation != -1) and (prev_observation != (prev_encoded_obs[-1] + 1)):
+            #     del prev_encoded_obs[0]
+            #     if obs_type == "composite":
+            #         del prev_encoded_obs[0]
+            #         prev_encoded_obs.append(prev_observation[0])
+            #         prev_encoded_obs.append(prev_observation[1])
+            #     else:
+            #         prev_encoded_obs.append(prev_observation)
+        
+            action = a.pre(tick,prev_encoded_obs, duration)
             # if action == 1:
             #     acts.append(tick-prev_tick)
             #     prev_tick = tick
                 # print("Defender:",tick)
             observation, reward, done, info = env.step(action)
-             
-            del encoded_obs[0]
-            encoded_obs.append(observation)
-            
+
+            encoded_obs = self.update_observation(encoded_obs, observation, obs_type)
+            # if (observation != -1) and (observation != (encoded_obs[-1] + 1)):
+            #     del encoded_obs[0]
+            #     if obs_type == "composite":
+            #         del encoded_obs[0]
+            #         encoded_obs.append(observation[0])
+            #         encoded_obs.append(observation[1])
+            #     else:
+            #         encoded_obs.append(observation)
+            # print(prev_encoded_obs)
+            # print(encoded_obs)
             a.post(tick,prev_encoded_obs,encoded_obs,reward,action,info['true_action'])
             if tick % 100 == 0:
                 benefit_per_100.append(env.calc_benefit(1)-prev_benefit)
@@ -88,11 +114,44 @@ class Simulation:
                     # print(a.T)
                     print("\n\n\n")
                 break
+        # print("Average Benefit per 100 Ticks:",sum(benefit_per_100)/(duration/100))
         # print("Histogram")
         # mlt.hist(acts)
         # mlt.show()
-        mlt.plot(benefit_per_100)
+        if p0_config == "custom":
+            j = 1.0
+            mv_freq = 0
+            for i in p0_config['dist']:
+                mv_freq += i*j
+                j += 1
+            print("True average moving frequency of opponent:",mv_freq)
+        
+        total_terms = int(len(benefit_per_100))
+        print("Average Benefit per 100 Ticks:{}".format(sum(benefit_per_100[total_terms-100:])/(100)))
+        
+        avg_ben = []
+        for i in range(len(benefit_per_100)):
+            if i < 9:
+                avg_ben.append(sum(benefit_per_100[:i+1])/(i+1))
+                continue
+            avg_ben.append(sum(benefit_per_100[i-9:i+1])/10)
+
+        with open('summary.csv', 'w') as f:
+            f.write('episode,p1_benefit_{}_{}_{}\n'.format(p1_strategy,rew_type,p0_strategy))
+            for i in range(len(avg_ben)):
+                f.write('{},{}\n'.format(i,avg_ben[i]))
+            f.write('Average benefit,{}\n'.format(sum(benefit_per_100[total_terms-100:])/(100)))
+
+        # mlt.plot(benefit_per_100, label = rew_type + " " + p1_strategy)
+        mlt.plot(avg_ben, label = rew_type + " " + p1_strategy + "average")
+        mlt.ylabel("Benefit Per Episode")
+        mlt.xlabel("Episodes")
+        mlt.legend()
         mlt.show()
+        # mlt.plot(p0_config['dist'])
+        # mlt.ylabel("Probability of moving")
+        # mlt.xlabel("Time step between consecutive moves")
+        # mlt.show()
 
     def gen_attacker(self,s,env,p1_config,p1_cost,debug):
         if 'greedy' in s:
@@ -103,9 +162,29 @@ class Simulation:
             return Q_Batch.Q_Batch(env.action_space.n,p1_config,debug=debug)
         elif 'q-net' in s:
             return Q_Net.Q_Net(env.action_space.n,p1_config,debug=debug)
+        elif 'policy-net' in s:
+            return Policy_Net.Policy_Net(env.action_space.n,p1_config,debug=debug)
         elif 'optimal-periodic' in s:
             return PeriodicOptimal.PeriodicOptimal(env.p0, p1_cost)
         elif 'renewal' in s:
             return Renewal.Renewal(s)
         else:
             raise NotImplementedError
+
+    def update_observation(self, encoded_obs, observation, obs_type):
+        for i in range(len(encoded_obs)):
+            if encoded_obs[i] != -1:
+                encoded_obs[i] += 1
+
+        if obs_type == "composite":
+            if (observation[1] != -1) and (observation[1] != (encoded_obs[-1])):
+                del encoded_obs[0]
+                del encoded_obs[0]
+                encoded_obs.append(observation[0])
+                encoded_obs.append(observation[1])
+
+        else:
+            if (observation != -1) and (observation != (encoded_obs[-1])):
+                del encoded_obs[0]
+                encoded_obs.append(observation)
+        return encoded_obs

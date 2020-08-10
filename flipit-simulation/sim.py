@@ -69,10 +69,41 @@ class Simulation:
                     # print(a.T)
                     print("\n\n\n")
                 break
-        # print("Histogram")
-        # mlt.hist(acts)
-        mlt.plot(benefit_per_100)
+        if p0_config == "custom":
+            j = 1.0
+            mv_freq = 0
+            for i in p0_config['dist']:
+                mv_freq += i*j
+                j += 1
+            print("True average moving frequency of opponent:",mv_freq)
+
+        total_terms = int(len(benefit_per_100))
+        
+        print("Average Benefit per 100 Ticks:{}".format(sum(benefit_per_100[total_terms-100:])/(100)))
+        
+        avg_ben = []
+        for i in range(len(benefit_per_100)):
+            if i < 9:
+                avg_ben.append(sum(benefit_per_100[:i+1])/(i+1))
+                continue
+            avg_ben.append(sum(benefit_per_100[i-9:i+1])/10)
+
+        with open('summary.csv', 'w') as f:
+            f.write('episode,p1_benefit_{}_{}_{}\n'.format(p1_strategy,rew_type,p0_strategy))
+            for i in range(len(avg_ben)):
+                f.write('{},{}\n'.format(i,avg_ben[i]))
+            f.write('Average benefit,{}\n'.format(sum(benefit_per_100[total_terms-100:])/(100)))
+
+        # mlt.plot(benefit_per_100, label = rew_type + " " + p1_strategy)
+        mlt.plot(avg_ben, label = rew_type + " " + p1_strategy + "average")
+        mlt.ylabel("Benefit Per Episode")
+        mlt.xlabel("Episodes")
+        mlt.legend()
         mlt.show()
+        # mlt.plot(p0_config['dist'])
+        # mlt.ylabel("Probability of moving")
+        # mlt.xlabel("Time step between consecutive moves")
+        # mlt.show()
 
     def gen_attacker(self,s,env,p1_config,p1_cost,debug):
         if 'greedy' in s:

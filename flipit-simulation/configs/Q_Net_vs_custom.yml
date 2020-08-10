@@ -2,12 +2,13 @@
   debug: True
   outfile: "out.csv"
   p1_strategy: q-net
-  p1_cost: 2
+  p1_cost: 1
   p1_config:
     gamma: 0.8
     p: 0.5
-    obs_size: 4
-    learning_rate: 0.00025
+    obs_size: 1
+    learning_rate: 0.0005
+    exploration_type: epsilon-greedy-visit-decay
     optim_epsilon: 0.01
     optim_alpha: 0.95 
     explore_config:
@@ -18,16 +19,27 @@
     batch_size: 32
     buffer_size: 200
     target_update: 200
-  p0_strategy: custom
+  # p0_strategy: normal
+  # p0_strategy: periodic
+  p0_strategy: exponential
+  # p0_strategy: uniform
+  # p0_strategy: custom
   p0_config:
-    dist: [0.03,0.04,0.03,0.08,0.12,0.15,0.15,0.08,0.07,0.06,0.06,0.04,0.04,0.03,0.02]
+    lambd: 0.2 #exponential
+    mean: 100 #normal
+    std_dev: 10 #normal
+    u: 15 #uniform
+    d: 100  #uniform
+    # dist: [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.0,0.0,0.0,0.0,0.0]
+    dist: [0.02,0.03,0.05,0.2,0.2,0.05,0.03,0.02,0.02,0.03,0.05,0.2,0.1,0.0,0.0]
+    # dist: [0.03,0.04,0.03,0.08,0.12,0.15,0.15,0.08,0.07,0.06,0.06,0.04,0.04,0.03,0.02]
     # dist: [0.0,0.0,0.0,0.0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1]
-    # avg_mv: 15
-    delta: 15
-  p0_cost: 2
-  duration: 80000
-  rew_type: New_benefit
+    avg_mv: 20
+    delta: 10 #periodic
+  p0_cost: 1
+  duration: 60000
+  rew_type: New_benefit 
   # rew_type: constant_minus_cost_norm
   rew_config:
     c: 5
-  obs_type: opp_LM
+  obs_type: composite

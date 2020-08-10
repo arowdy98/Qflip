@@ -2,28 +2,30 @@
   debug: True
   outfile: "out.csv"
   p1_strategy: q-table
-  p1_cost: 10
+  p1_cost: 2
   p1_config:
     gamma: 0.8
-    p: 0.7
+    p: 0.5
     exploration_type: epsilon-greedy-visit-decay
     explore_config:
       epsilon: 0.5
-      decay_lambda: 0.05
+      decay_lambda: 0.005
     estimate_type: td
     step_type: sample-average
-  p0_strategy: normal
+    batch_size: 32
+  p0_strategy: periodic
   p0_config:
-    avg_mv: 50
+    avg_mv: 10
     lambd: 0.01
-    delta: 10
+    delta: 15
     mean: 100
     std_dev: 10 
     u: 50
     d: 100
-  p0_cost: 1
+  p0_cost: 2
   duration: 32000
-  rew_type: LM_benefit
+  # rew_type: New_benefit
+  rew_type: constant_minus_cost_norm
   rew_config:
     c: 5
   obs_type: opp_LM

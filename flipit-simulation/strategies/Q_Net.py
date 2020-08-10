@@ -23,7 +23,6 @@ class Replay_Buffer():
         self.position = 0
 
     def update(self, prev_obs, obs, rew, act): 
-
         self.prev_obs[self.position] = prev_obs
         self.obs[self.position] = obs
         self.acts[self.position] = act
@@ -52,10 +51,10 @@ class DQN(nn.Module):
             num_actions: number of action-value to output, one-to-one correspondence to action in game.
         """
         super(DQN, self).__init__()
-        self.fc1 = nn.Linear(in_features, 8)
-        # self.fc2 = nn.Linear(16, 8)
+        self.fc1 = nn.Linear(in_features, 4)
+        # self.fc2 = nn.Linear(8, 4)
         # self.fc3 = nn.Linear(128, 64)
-        self.fc4 = nn.Linear(8, num_actions)
+        self.fc4 = nn.Linear(4, num_actions)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -84,9 +83,9 @@ class Q_Net:
         self.optim_eps = q_configs['optim_epsilon']
         self.optim_alpha  = q_configs['optim_alpha']
         self.target_update_freq = q_configs['target_update']
-        self.optim = optim.RMSprop(self.Q.parameters(),lr=self.lr,alpha=self.optim_alpha,eps=self.optim_eps)
+        self.optim = optim.Adam(self.Q.parameters(),lr=self.lr)
 
-    def pre(self,tick,prev_observation):
+    def pre(self,tick,prev_observation, duration):
         decay = self.epsilon * math.exp(-self.decay*tick)
         if random.random() < decay:
             print("Random:",tick)
@@ -94,7 +93,8 @@ class Q_Net:
         # print(prev_observation)
         prev_observation = torch.from_numpy(np.array(prev_observation)).type(dtype).unsqueeze(0) 
         row = self.Q(prev_observation)
-        # print(row)
+        if tick > duration - 100 :
+            print(prev_observation, row)
         return int(row.data.max(1)[1])
 
     def post(self,tick,prev_observation,observation,reward,action,true_action):

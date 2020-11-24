@@ -1,27 +1,28 @@
 ---
   debug: True
   outfile: "out.csv"
-  p1_strategy: q-net
+  p1_strategy: policy-net
   p1_cost: 1
   p1_config:
-    gamma: 0.8
+    gamma: 0.9
     p: 0.5
     obs_size: 1
-    learning_rate: 0.0005
+    sequence_length: 10
+    learning_rate: 0.005
     exploration_type: epsilon-greedy-visit-decay
     optim_epsilon: 0.01
     optim_alpha: 0.95 
     explore_config:
       epsilon: 0.99
-      decay_lambda: 0.0003
+      decay_lambda: 0.0005 #0.0003
     estimate_type: td
     step_type: sample-average
     batch_size: 32
     buffer_size: 200
     target_update: 200
   # p0_strategy: normal
-  # p0_strategy: periodic
-  p0_strategy: exponential
+  p0_strategy: periodic
+  # p0_strategy: exponential
   # p0_strategy: uniform
   # p0_strategy: custom
   p0_config:
@@ -37,9 +38,11 @@
     avg_mv: 20
     delta: 10 #periodic
   p0_cost: 1
-  duration: 60000
-  rew_type: New_benefit 
+  duration: 500000
+  rew_type: New_benefit
+  # rew_type: constant_reciprocal 
   # rew_type: constant_minus_cost_norm
   rew_config:
     c: 5
-  obs_type: composite
+    upper_lim: 20 #reciprocal
+  obs_type: opp_LM

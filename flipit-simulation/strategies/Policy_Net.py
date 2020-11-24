@@ -89,14 +89,14 @@ class Policy_Net:
 
             for log_prob, R in zip(self.Policy.saved_log_probs, returns):
                 # policy_loss.append(-log_prob * R)
-                loss = -log_prob * R
+                loss = (-log_prob * R)/100
                 loss.backward()
         
             # policy_loss = torch.cat(policy_loss).sum()
             # policy_loss.backward()
 
-            # for param in self.Policy.parameters():
-            #     param.grad.data.clamp_(-1, 1)
+            for param in self.Policy.parameters():
+                param.grad.data.clamp_(-1, 1)
             
             self.optim.step()
 

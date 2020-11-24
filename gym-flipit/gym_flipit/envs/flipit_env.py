@@ -178,6 +178,8 @@ class FlipitEnv(gym.Env):
             return calc_rew.reciprocal(self.found_FM,self.moved(1),self.get_LM(0),self.player_moves[1],self.player_move_costs[1],self.tick)
         elif self.rew_type == 'constant_reciprocal':
             return calc_rew.constant_reciprocal(self.found_FM,self.moved(1),self.get_LM(0),self.player_moves[1],self.player_move_costs[1],self.rew_configs['upper_lim'],self.tick)
+        elif self.rew_type == 'modified_reciprocal':
+            return calc_rew.modified_reciprocal(self.found_FM,self.moved(1),self.state,self.player_moves[1],self.player_move_costs[1],self.rew_configs['upper_lim'],self.tick)
         elif self.rew_type == 'constant':
             return calc_rew.constant(self.found_FM,self.moved(1),self.get_LM(0),self.player_moves[1],self.player_move_costs[1],self.rew_configs['val'],self.tick)
         elif self.rew_type == 'constant_minus_cost':

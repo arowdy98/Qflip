@@ -88,7 +88,7 @@ class Q_Net:
     def pre(self,tick,prev_observation, duration):
         decay = self.epsilon * math.exp(-self.decay*tick)
         if random.random() < decay:
-            print("Random:",tick)
+            # print("Random:",tick)
             return 0 if random.random() < self.p else 1
         # print(prev_observation)
         prev_observation = torch.from_numpy(np.array(prev_observation)).type(dtype).unsqueeze(0) 

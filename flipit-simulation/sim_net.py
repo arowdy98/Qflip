@@ -3,7 +3,7 @@ import gym_flipit
 import numpy as np
 import pprint
 import random
-from strategies import GreedyWrapper,Q,Renewal,PeriodicOptimal,Q_Batch, Q_Net, Policy_Net
+from strategies import GreedyWrapper,Q,Renewal,PeriodicOptimal,Q_Batch, Q_Net, Policy_Net, DRQN
 import matplotlib.pyplot as mlt
 
 class Simulation:
@@ -48,45 +48,22 @@ class Simulation:
 
         encoded_obs = [-1]*p1_config["obs_size"]
         prev_encoded_obs = [-1]*p1_config["obs_size"]
-        # encoded_obs = []
-        # prev_encoded_obs = []
+
         benefit_per_100 = []
         prev_benefit = 0
 
         for tick in range(duration):
             prev_encoded_obs = encoded_obs.copy()
-            # prev_observation = observation
-            # if len(encoded_obs) < p1_config['obs_size']:
-            #     action = 0 if random.random() < p1_config['p'] else 1
-            #     observation, reward, done, info = env.step(action)
-            #     print("Trouble")
-            #     if obs_type == "composite":
-            #         encoded_obs.append(observation[0])
-            #         encoded_obs.append(observation[1])
-            #         prev_encoded_obs.append(prev_observation[0])
-            #         prev_encoded_obs.append(prev_observation[1])
-            #     else:
-            #         encoded_obs.append(observation)
-            #         prev_encoded_obs.append(prev_observation)
-            #     continue
             
-            # if (prev_observation != -1) and (prev_observation != (prev_encoded_obs[-1] + 1)):
-            #     del prev_encoded_obs[0]
-            #     if obs_type == "composite":
-            #         del prev_encoded_obs[0]
-            #         prev_encoded_obs.append(prev_observation[0])
-            #         prev_encoded_obs.append(prev_observation[1])
-            #     else:
-            #         prev_encoded_obs.append(prev_observation)
-        
             action = a.pre(tick,prev_encoded_obs, duration)
             # if action == 1:
             #     acts.append(tick-prev_tick)
             #     prev_tick = tick
                 # print("Defender:",tick)
             observation, reward, done, info = env.step(action)
-
             encoded_obs = self.update_observation(encoded_obs, observation, obs_type)
+
+            # print(encoded_obs, reward)
             # if (observation != -1) and (observation != (encoded_obs[-1] + 1)):
             #     del encoded_obs[0]
             #     if obs_type == "composite":
@@ -144,8 +121,8 @@ class Simulation:
 
         # mlt.plot(benefit_per_100, label = rew_type + " " + p1_strategy)
         mlt.plot(avg_ben, label = rew_type + " " + p1_strategy + "average")
-        mlt.ylabel("Benefit Per Episode")
-        mlt.xlabel("Episodes")
+        mlt.ylabel("Benefit Per Episode",fontsize=14)
+        mlt.xlabel("Episodes",fontsize=14)
         mlt.legend()
         mlt.show()
         # mlt.plot(p0_config['dist'])
@@ -162,6 +139,8 @@ class Simulation:
             return Q_Batch.Q_Batch(env.action_space.n,p1_config,debug=debug)
         elif 'q-net' in s:
             return Q_Net.Q_Net(env.action_space.n,p1_config,debug=debug)
+        elif 'drqn' in s:
+        	return DRQN.DRQN(env.action_space.n,p1_config,debug=debug)
         elif 'policy-net' in s:
             return Policy_Net.Policy_Net(env.action_space.n,p1_config,debug=debug)
         elif 'optimal-periodic' in s:

@@ -16,9 +16,9 @@ def New_benefit(found_FM,p1_moved,p1_cost,controller):
 def exponential(found_FM,p1_moved,p1_cost,p0_LM,p1_moves,tick,configs):
     if not found_FM or not p1_moved:
         return 0
-    elif p0_LM >= p1_moves[-2]: 
+    elif p0_LM >= p1_moves[-2]:
         tau = tick-p0_LM
-        return math.exp((configs['b']-tau)/configs['a']) - p1_cost 
+        return math.exp((configs['b']-tau)/configs['a']) - p1_cost
     else:
         return - p1_cost
 
@@ -27,7 +27,7 @@ def reciprocal(found_FM,p1_moved,p0_LM,p1_moves,p1_cost,tick):
         return 0
     elif p0_LM >= p1_moves[-2]:
         tau = tick-p0_LM
-        return p1_cost*(1/tau)
+        return p1_cost*(1.0/tau)
     else:
         return - p1_cost
 
@@ -37,6 +37,20 @@ def constant_reciprocal(found_FM,p1_moved,p0_LM,p1_moves,p1_cost,upper_lim,tick)
     elif p0_LM >= p1_moves[-2]:
         tau = tick-p0_LM
         return upper_lim*(1/tau)
+    else:
+        return - p1_cost
+
+def modified_reciprocal(found_FM,p1_moved,p0_LM,p1_moves,p1_cost,upper_lim,tick):
+    if not found_FM: 
+    	return 0
+    elif not p1_moved:
+        if p0_LM > p1_moves[-1]:
+        	return 0
+        else:
+        	return upper_lim*(1.0/(p1_moves[-1]-p0_LM))
+    elif p0_LM >= p1_moves[-2]:
+        tau = tick-p0_LM
+        return upper_lim*(1.0/tau)
     else:
         return - p1_cost
 

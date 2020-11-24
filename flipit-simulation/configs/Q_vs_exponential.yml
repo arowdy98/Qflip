@@ -2,7 +2,7 @@
   debug: True
   outfile: "out.csv"
   p1_strategy: q-table
-  p1_cost: 2
+  p1_cost: 1
   p1_config:
     gamma: 0.8
     p: 0.5
@@ -13,19 +13,19 @@
     estimate_type: td
     step_type: sample-average
     batch_size: 32
-  p0_strategy: periodic
+  p0_strategy: exponential
   p0_config:
     avg_mv: 10
-    lambd: 0.01
+    lambd: 0.2
     delta: 15
     mean: 100
     std_dev: 10 
     u: 50
     d: 100
-  p0_cost: 2
-  duration: 32000
-  # rew_type: New_benefit
-  rew_type: constant_minus_cost_norm
+  p0_cost: 1
+  duration: 80000
+  rew_type: New_benefit
+  # rew_type: constant_minus_cost_norm
   rew_config:
     c: 5
-  obs_type: opp_LM
+  obs_type: own_LM

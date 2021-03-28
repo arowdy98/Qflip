@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sim
 import sim_net
+import sim2
 import yaml
 import sys
 try:
@@ -14,6 +15,7 @@ else:
     config = sys.argv[1]
 
 # s = sim.Simulation()
-s = sim_net.Simulation()
+# s = sim_net.Simulation()
+s = sim2.Simulation()
 configs = yaml.load(open(config),Loader=Loader)
 s.run(**configs)

@@ -93,8 +93,8 @@ class DRQN_net(nn.Module):
 
         self.input_shape = in_features
         self.gru_size = gru_size
-        self.fc1 = nn.Linear(in_features, 8)
-        self.gru = nn.GRU(8, gru_size, num_layers=1, batch_first=True, bidirectional=False)
+        self.fc1 = nn.Linear(in_features, 4)
+        self.gru = nn.GRU(4, gru_size, num_layers=1, batch_first=True, bidirectional=False)
         # self.fc2 = nn.Linear(8, 4)
         # self.fc3 = nn.Linear(128, 64)
         self.fc2 = nn.Linear(gru_size, num_actions)
@@ -142,21 +142,22 @@ class DRQN:
         self.seq = [np.zeros(self.obs_size) for j in range(self.sequence_length)]
 
     def pre(self,tick,prev_observation, duration):
-        self.seq.pop(0)
-        self.seq.append(prev_observation)
-        decay = self.epsilon * math.exp(-self.decay*tick)
-        if random.random() < decay:
-            # print("Random:",tick)
-            return 0 if random.random() < self.p else 1
-        # print(prev_observation)
-        X = torch.tensor([self.seq], dtype=torch.float)
-        row, _ = self.Q(X)
-        row = row[:, -1, :]
-        row = row.max(1)[1]
-        # if tick > duration - 100 :
-        #     print(prev_observation, row)
-        # return int(row.data.max(1)[1])
-        return row.item()
+        with torch.no_grad():
+            self.seq.pop(0)
+            self.seq.append(prev_observation)
+            decay = self.epsilon * math.exp(-self.decay*tick)
+            if random.random() < decay:
+                # print("Random:",tick)
+                return 0 if random.random() < self.p else 1
+            # print(prev_observation)
+            X = torch.tensor([self.seq], dtype=torch.float)
+            row, _ = self.Q(X)
+            row = row[:, -1, :]
+            row = row.max(1)[1]
+            # if tick > duration - 100 :
+            #     print(prev_observation, row)
+            # return int(row.data.max(1)[1])
+            return row.item()
 
     def prep_minibatch(self):
         # random transition batch is taken from experience replay memory
@@ -208,7 +209,7 @@ class DRQN:
             expected_q_values = batch_reward + (self.gamma*max_next_q_values)
 
         diff = (expected_q_values - current_q_values)
-        loss = self.huber(diff)
+        loss = self.MSE(diff)
         
         #mask first half of losses
         split = self.sequence_length // 2
@@ -232,6 +233,8 @@ class DRQN:
             batch_vars = self.prep_minibatch()
 
             loss = self.compute_loss(batch_vars)
+
+            loss = loss/(self.batch_size*self.sequence_length)
 
             # Optimize the model
             self.optimizer.zero_grad()

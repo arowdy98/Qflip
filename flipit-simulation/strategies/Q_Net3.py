@@ -62,7 +62,7 @@ class DQN(nn.Module):
         # x = F.relu(self.fc3(x))
         return self.fc4(x)
 
-class Q_Net2:
+class Q_Net3:
     def __init__(self,n_node,a_space_size,q_configs,debug=False):
         self.dropped = False
         self.a_space_size = a_space_size
@@ -111,7 +111,7 @@ class Q_Net2:
     def post(self,tick,prev_observation,observation,reward,action,true_action):
         
         for i in range(self.n_node):
-            self.buffer[i].update(prev_observation, observation, reward, true_action[i])
+            self.buffer[i].update(prev_observation, observation, reward[i], true_action[i])
 
             if self.buffer[i].size >= 4*self.batch_size and tick % 4 == 0:
                 # self.buffer = np.array(self.buffer)

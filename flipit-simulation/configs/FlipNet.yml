@@ -1,35 +1,36 @@
 ---
   debug: True
   outfile: "out.csv"
-  p1_strategy: q-net
+  p1_strategy: q-net2
   p1_cost: 1
   p1_config:
     gamma: 0.9
     p: 0.5
     obs_size: 1
     sequence_length: 10
-    learning_rate: 0.005
+    learning_rate: 0.001
     exploration_type: epsilon-greedy-visit-decay
     optim_epsilon: 0.01
     optim_alpha: 0.95 
     explore_config:
       epsilon: 0.99
-      decay_lambda: 0.0005 #0.0003
+      decay_lambda: 0.0003 #0.0003
     estimate_type: td
     step_type: sample-average
     batch_size: 32
     buffer_size: 200
     target_update: 200
+    lr_greedy: 0.05
   # p0_strategy: normal
-  # p0_strategy: periodic
-  p0_strategy: binomial
+  p0_strategy: periodic
+  # p0_strategy: binomial
   # p0_strategy: exponential
   # p0_strategy: uniform
   # p0_strategy: custom
   p0_config:
     lambd: 0.2 #exponential
-    mean: 100 #normal
-    std_dev: 10 #normal
+    mean: [100,80,90,120,80] #normal
+    std_dev: [10,10,10,10,10] #normal
     u: 15 #uniform
     d: 100  #uniform
     # dist: [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.0,0.0,0.0,0.0,0.0]
@@ -37,13 +38,16 @@
     # dist: [0.03,0.04,0.03,0.08,0.12,0.15,0.15,0.08,0.07,0.06,0.06,0.04,0.04,0.03,0.02]
     # dist: [0.0,0.0,0.0,0.0,0,0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1]
     avg_mv: 20
-    delta: [10,15,10,20,30] #periodic
-    beta: [0.8,0.3,0.2,0.15,0.4] #binomial
-    n_node: 5
+    # delta: [10,15,10,20,30] #periodic
+    delta: [10,15] #periodic
+    # delta: [10] #periodic
+    beta:   [0.05,0.05,0.05,0.05,0.05] #binomial
+    n_node: 2
     n_seed: 1
-    edges: [[1,2],[1,3],[1,4],[1,5],[1,6]]
+    # edges: [[1,2],[1,3],[1,4],[1,5],[1,6]]
+    edges: [[1,2],[1,3]]
   p0_cost: 1
-  duration: 600000
+  duration: 60000
   rew_type: New_benefit
   # rew_type: constant_reciprocal 
   # rew_type: constant_minus_cost_norm

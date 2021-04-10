@@ -38,7 +38,10 @@ class FlipNetEnv(gym.Env):
         for i in range(self.n_node):
             # print(p0_configs['beta'])
             p0_configs_indi = p0_configs.copy()
-            p0_configs_indi['beta'] = p0_configs['beta'][i]
+            p0_configs_indi['delta'] = p0_configs['delta'][i]
+            # p0_configs_indi['beta'] = p0_configs['beta'][i]
+            # p0_configs_indi['mean'] = p0_configs['mean'][i]
+            # p0_configs_indi['std_dev'] = p0_configs['std_dev'][i]
             self.nodes.append(FlipNode(state_type,rew_type,rew_configs,p0,p0_configs_indi,duration,p0_move_cost,p1_move_cost))
         self.reset()
     
@@ -55,6 +58,7 @@ class FlipNetEnv(gym.Env):
         # if both players play, defender gets control
         node_copy = self.node_controller.copy()
         rew = 0
+        rew_list = []
         self.player_total_move_cost = [0,0]
         tru_act = []
         for i in range(self.n_node):
@@ -73,10 +77,12 @@ class FlipNetEnv(gym.Env):
             self.node_controller[self.n_seed+i] = self.nodes[i].controller
             self.state[i] = observation
             rew += reward
+            rew_list.append(reward)
             self.player_total_gain[self.nodes[i].controller] += 1
             self.player_total_move_cost[0] += self.nodes[i].player_total_move_cost[0]
             self.player_total_move_cost[1] += self.nodes[i].player_total_move_cost[1]
-        return self.state, reward, done, {'true_action':tru_act}
+        return self.state, rew/float(self.n_node), done, {'true_action':tru_act}
+        # return self.state, rew_list, done, {'true_action':tru_act}
     
     def set_obs_space(self):
         if self.state_type == 'opp_LM':

@@ -3,7 +3,7 @@ import gym_flipit
 import numpy as np
 import pprint
 import random
-from strategies import Q_Net2
+from strategies import Q_Net2, Q_Net3, Greedy_Max
 import matplotlib.pyplot as mlt
 
 class Simulation:
@@ -30,18 +30,12 @@ class Simulation:
             pprint.pprint(p1_config)
             print('defender config ({}):'.format(p0_strategy))
             pprint.pprint(p0_config)
-        # acts = []
-        # prev_tick = 0
-        # run simulation
-
-        # encoded_obs = [-1]*p1_config["obs_size"]*p0_config['n_node']
-        # prev_encoded_obs = [-1]*p1_config["obs_size"]*p0_config['n_node']
 
         benefit_per_100 = []
         prev_benefit = 0
 
         for tick in range(duration):
-            prev_observation = observation
+            prev_observation = observation.copy()
             # prev_encoded_obs = encoded_obs.copy()
             
             action = a.pre(tick,prev_observation, duration)
@@ -62,13 +56,6 @@ class Simulation:
                     print('Total p0 benefit: {}'.format(env.calc_benefit(0)))
                     print("\n\n\n")
                 break
-        # if p0_config == "custom":
-        #     j = 1.0
-        #     mv_freq = 0
-        #     for i in p0_config['dist']:
-        #         mv_freq += i*j
-        #         j += 1
-        #     print("True average moving frequency of opponent:",mv_freq)
         
         total_terms = int(len(benefit_per_100))
         print("Average Benefit per 100 Ticks:{}".format(sum(benefit_per_100[total_terms-100:])/(100)))
@@ -94,8 +81,12 @@ class Simulation:
         mlt.show()
 
     def gen_attacker(self,n_node,s,env,p1_config,p1_cost,debug):
-        if 'q-net' in s:
+        if 'q-net2' in s:
             return Q_Net2.Q_Net2(n_node,2,p1_config,debug=debug)
+        elif 'q-net3' in s:
+            return Q_Net3.Q_Net3(n_node,2,p1_config,debug=debug)
+        elif 'greedy-max' in s:
+            return Greedy_Max.Greedy_Max(n_node,p1_config)
         else:
             raise NotImplementedError
 
